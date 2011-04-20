@@ -30,6 +30,17 @@ def symlink(src, dst):
     try: os.symlink(src, dst)
     except OSError: pass
 
+def build_path(pre, post):
+    tab = [post, '_', '_', '_', '_', 'docs']
+
+    for i in range(0, 3):
+        if i < len(pre):
+            tab[i+1] = pre[i]
+    if len(pre) >= 4:
+        tab[4] = pre[3:]
+
+    return tab
+
 def main():
     parser = optparse.OptionParser()
     parser.add_option('-d', '--domain', help='domain name to create')
@@ -39,9 +50,24 @@ def main():
         logger.error('no domain name specified')
         return
 
-    logger.info('create domain name %s' % options.domain)
-
     domain = options.domain.split('.')
+
+    if len(domain) == 3:
+        logger.info('create a subdomain name %s' % options.domain)
+
+        sub, name, ext = domain
+        tab = build_path(sub, '.'.join(domain[1:]))
+
+        path = '/'.join(tab)
+
+        logger.info('create path directories (%s)' % path)
+        makedirs(path)
+
+        logger.info('created')
+
+        return
+
+    logger.info('create a domain name %s' % options.domain)
 
     if len(domain) < 2:
         logger.error('incorrect domain')
@@ -53,13 +79,7 @@ def main():
 
     pre, post = domain
 
-    tab = ['%s' % post, '_', '_', '_', '_', 'docs']
-
-    for i in range(0, 3):
-        if i < len(pre):
-            tab[i+1] = pre[i]
-    if len(pre) >= 4:
-        tab[4] = pre[3:]
+    tab = build_path(pre, post)
 
     path_docs = '%s/w/w/w/_/docs' % options.domain
     alias_path = '/'.join(tab[:-1])
