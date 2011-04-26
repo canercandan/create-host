@@ -63,6 +63,9 @@ def main():
         logger.info('create path directories (%s)' % path)
         makedirs(path)
 
+        logger.info('create symbolic links to docs (%s)' % path)
+        symlink(path, '%s_docs' % options.domain)
+
         logger.info('created')
 
         return
