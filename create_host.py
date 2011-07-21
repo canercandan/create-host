@@ -18,6 +18,14 @@
 # Caner Candan <caner@candan.fr>, http://caner.candan.fr
 #
 
+# TODO
+#
+# options -path
+# options -password
+#
+# delete_hosts.py
+#
+
 import optparse, logging, sys, os, common
 
 logger = logging.getLogger('Create Host')
@@ -44,6 +52,7 @@ def build_path(pre, post):
 def main():
     parser = optparse.OptionParser()
     parser.add_option('-d', '--domain', help='domain name to create')
+    parser.add_option('-p', '--path', default='.', help='path where to create the web space')
     options = common.parser(parser)
 
     if not options.domain:
@@ -58,13 +67,14 @@ def main():
         sub, name, ext = domain
         tab = build_path(sub, '.'.join(domain[1:]))
 
-        path = '/'.join(tab)
+        subpath = '/'.join(tab)
+        fullpath = '%s/%s' % (options.path, subpath)
 
-        logger.info('create path directories (%s)' % path)
-        makedirs(path)
+        logger.info('create path directories (%s)' % fullpath)
+        makedirs(fullpath)
 
-        logger.info('create symbolic links to docs (%s)' % path)
-        symlink(path, '%s_docs' % options.domain)
+        logger.info('create symbolic links to docs (%s)' % fullpath)
+        symlink(fullpath, '%s_docs' % options.domain)
 
         logger.info('created')
 
@@ -85,18 +95,21 @@ def main():
     tab = build_path(pre, post)
 
     path_docs = '%s/w/w/w/_/docs' % options.domain
-    alias_path = '/'.join(tab[:-1])
-    alias_path_docs = '/'.join(tab)
+    fullpath_docs = '%s/%s' % (options.path, path_docs)
+    path_alias = '/'.join(tab[:-1])
+    fullpath_alias = '%s/%s' % (options.path, path_alias)
+    path_alias_docs = '/'.join(tab)
+    fullpath_alias_docs = '%s/%s' % (options.path, path_alias_docs)
 
-    logger.info('create alias path directories (%s)' % alias_path)
-    makedirs(alias_path)
+    logger.info('create alias path directories (%s)' % fullpath_alias)
+    makedirs(fullpath_alias)
 
-    logger.info('create path to docs (%s)' % path_docs)
-    makedirs(path_docs)
+    logger.info('create path to docs (%s)' % fullpath_docs)
+    makedirs(fullpath_docs)
 
-    logger.info('create symbolic links to docs (%s)' % alias_path_docs)
-    symlink('../../../../../%s' % path_docs, alias_path_docs)
-    symlink(path_docs, '%s_docs' % options.domain)
+    logger.info('create symbolic links to docs (%s)' % fullpath_alias_docs)
+    symlink('../../../../../%s' % path_docs, fullpath_alias_docs)
+    symlink(path_docs, '%s/%s_docs' % (options.path, options.domain))
 
     logger.info('created')
 
