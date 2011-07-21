@@ -49,47 +49,41 @@ def build_path(pre, post):
 
     return tab
 
-def main():
-    parser = optparse.OptionParser()
-    parser.add_option('-d', '--domain', help='domain name to create')
-    parser.add_option('-p', '--path', default='.', help='path where to create the web space')
-    options = common.parser(parser)
+def create_ftp(options, fullpath_docs, domain):
+    import subprocess
 
-    if not options.domain:
-        logger.error('no domain name specified')
-        return
+    variables = {'HOME_PATH': fullpath_docs,
+                 'PASSWORD': options.password,
+                 'LOGIN': ''.join(domain),
+                 }
 
-    domain = options.domain.split('.')
+    cmd = 'useradd --home %(HOME_PATH)s --shell /bin/false --password %(PASSWORD)s %(LOGIN)s' % variables
 
-    if len(domain) == 3:
-        logger.info('create a subdomain name %s' % options.domain)
+    p = subprocess.Popen(cmd, shell=True)
+    p.wait()
 
-        sub, name, ext = domain
-        tab = build_path(sub, '.'.join(domain[1:]))
+    return True
 
-        subpath = '/'.join(tab)
-        fullpath = '%s/%s' % (options.path, subpath)
+def create_subdomain(options, domain):
+    logger.info('create a subdomain name %s' % options.domain)
 
-        logger.info('create path directories (%s)' % fullpath)
-        makedirs(fullpath)
+    sub, name, ext = domain
+    tab = build_path(sub, '.'.join(domain[1:]))
 
-        logger.info('create symbolic links to docs (%s)' % fullpath)
-        symlink(subpath, '%s/%s_docs' % (options.path, options.domain))
+    path_docs = '/'.join(tab)
+    fullpath_docs = '%s/%s' % (options.path, path_docs)
 
-        logger.info('created')
+    logger.info('create path directories (%s)' % fullpath_docs)
+    makedirs(fullpath_docs)
 
-        return
+    logger.info('create symbolic links to docs (%s)' % fullpath_docs)
+    symlink(path_docs, '%s/%s_docs' % (options.path, options.domain))
 
-    logger.info('create a domain name %s' % options.domain)
+    create_ftp(options, fullpath_docs, domain)
 
-    if len(domain) < 2:
-        logger.error('incorrect domain')
-        return
+    logger.info('created')
 
-    if domain[0] == 'www':
-        logger.error('don\'t use www ahead your domain')
-        return
-
+def create_domain(options, domain):
     pre, post = domain
 
     tab = build_path(pre, post)
@@ -111,7 +105,45 @@ def main():
     symlink('../../../../../%s' % path_docs, fullpath_alias_docs)
     symlink(path_docs, '%s/%s_docs' % (options.path, options.domain))
 
+    create_ftp(options, fullpath_docs, domain)
+
     logger.info('created')
+
+def create_web(options):
+    if not options.domain:
+        logger.error('no domain name specified')
+        return
+
+    if not options.password:
+        logger.error('no password specified')
+        return
+
+    domain = options.domain.split('.')
+
+    if len(domain) == 3:
+        create_subdomain(options, domain)
+        return
+
+    logger.info('create a domain name %s' % options.domain)
+
+    if len(domain) < 2:
+        logger.error('incorrect domain')
+        return
+
+    if domain[0] == 'www':
+        logger.error('don\'t use www ahead your domain')
+        return
+
+    create_domain(options, domain)
+
+def main():
+    parser = optparse.OptionParser()
+    parser.add_option('-d', '--domain', help='domain name to create')
+    parser.add_option('-p', '--path', default='.', help='path where to create the web space')
+    parser.add_option('-P', '--password', default='', help='an encrypted password, as returned by crypt(3) for the ftp access')
+    options = common.parser(parser)
+
+    create_web(options)
 
 if __name__ == '__main__':
     main()
