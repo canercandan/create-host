@@ -74,7 +74,7 @@ def main():
         makedirs(fullpath)
 
         logger.info('create symbolic links to docs (%s)' % fullpath)
-        symlink(fullpath, '%s_docs' % options.domain)
+        symlink(subpath, '%s/%s_docs' % (options.path, options.domain))
 
         logger.info('created')
 
