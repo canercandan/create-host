@@ -114,9 +114,9 @@ def create_web(options):
         logger.error('no domain name specified')
         return
 
-    if not options.password:
-        logger.error('no password specified')
-        return
+    # if not options.password:
+    #     logger.error('no password specified')
+    #     return
 
     domain = options.domain.split('.')
 
