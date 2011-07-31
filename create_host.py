@@ -79,7 +79,7 @@ def create_subdomain(options, domain):
     logger.info('create symbolic links to docs (%s)' % fullpath_docs)
     symlink(path_docs, '%s/%s_docs' % (options.path, options.domain))
 
-    create_ftp(options, fullpath_docs, domain)
+    #create_ftp(options, fullpath_docs, domain) # doestnot work
 
     logger.info('created')
 
@@ -105,7 +105,7 @@ def create_domain(options, domain):
     symlink('../../../../../%s' % path_docs, fullpath_alias_docs)
     symlink(path_docs, '%s/%s_docs' % (options.path, options.domain))
 
-    create_ftp(options, fullpath_docs, domain)
+    #create_ftp(options, fullpath_docs, domain) # doesnot work
 
     logger.info('created')
 
